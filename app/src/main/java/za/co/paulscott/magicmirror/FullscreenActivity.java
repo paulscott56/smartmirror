@@ -1,40 +1,45 @@
 package za.co.paulscott.magicmirror;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.os.Build;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AnalogClock;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class FullscreenActivity extends AppCompatActivity {
 
-    private static final boolean AUTO_HIDE = true;
-
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-
-    private static final int UI_ANIMATION_DELAY = 300;
-    private static final String TAG = "Main";
-    private final Handler mHideHandler = new Handler();
-    private View mContentView;
+    private String API_KEY = "e255e600633bd27746ed615a1bdae32f";
+    private String UNITS = "metric";
+    private String lat = "-26.130491";
+    private String lon = "28.017944";
+    private String getUrl = "http://api.openweathermap.org/data/2.5/weather?lat="
+            + lat + "&lon=" + lon + "&apikey=" + API_KEY + "&units=" + UNITS;
 
     private boolean mVisible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getWeatherString();
 
         if (Build.VERSION.SDK_INT < 16) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -51,21 +56,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_fullscreen);
         mVisible = false;
-
-        Context con = getApplicationContext();
-        OpenWeatherApi weather = new OpenWeatherApi();
-        weather.getWeatherString(con);
-        String weath = weather.getCurrString();
-        System.out.println("--------------------------------------------------->>>>>>>>" + weath);
-        TextView w = (TextView) findViewById(R.id.weath);
-        w.setText(weath);
-
-
-
         AnalogClock ac = (AnalogClock) findViewById(R.id.analogClock);
-
         Calendar c = Calendar.getInstance();
-
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String formattedDate = df.format(c.getTime());
         TextView txtView = (TextView) findViewById(R.id.date);
@@ -77,5 +69,38 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+    }
+
+    public void getWeatherString() {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, getUrl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // parse out the JSON
+                        try {
+                            JSONObject res = new JSONObject(response);
+                            JSONObject main = res.getJSONObject("main");
+                            String minTemp = main.getString("temp_min");
+                            String maxTemp = main.getString("temp_max");
+                            String currTemp = main.getString("temp");
+                            String ret = "Min: " + minTemp + "℃, Max: " + maxTemp + "℃, Current: " + currTemp + "℃";
+                            TextView w = (TextView) findViewById(R.id.weath);
+                            w.setText(ret);
+                        } catch (JSONException e) {
+                            TextView w = (TextView) findViewById(R.id.weath);
+                            w.setText(R.string.noweather);
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println(error.toString());
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 }
