@@ -18,31 +18,32 @@
         android:id="@+id/analogClock"
         android:layout_width="170dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="left|top"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_gravity="left|top" />
 
     <TextView
+        android:id="@+id/date"
         android:layout_width="170dp"
         android:layout_height="80dp"
-        android:id="@+id/date"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/analogClock"
         android:layout_gravity="left|bottom"
-        android:textColor="#ffffff"
         android:text="@string/app_name"
-        android:textStyle="bold"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true" />
+        android:textColor="#ffffff"
+        android:textStyle="bold" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="80dp"
         android:id="@+id/weath"
+        android:layout_width="wrap_content"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:layout_gravity="left|bottom"
         android:text="@string/app_name"
-        android:textStyle="bold"
         android:textColor="#ffffff"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:textSize="34dp"
+        android:textStyle="bold" />
 
 
 </RelativeLayout>
