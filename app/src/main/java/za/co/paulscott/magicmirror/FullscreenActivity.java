@@ -2,6 +2,8 @@ package za.co.paulscott.magicmirror;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
@@ -25,20 +27,18 @@ import java.util.Calendar;
 
 public class FullscreenActivity extends AppCompatActivity {
 
+    private boolean mVisible;
     private String API_KEY = "e255e600633bd27746ed615a1bdae32f";
     private String UNITS = "metric";
     private String lat = "-26.130491";
     private String lon = "28.017944";
     private String getUrl = "http://api.openweathermap.org/data/2.5/weather?lat="
             + lat + "&lon=" + lon + "&apikey=" + API_KEY + "&units=" + UNITS;
-
-    private boolean mVisible;
+    private RefreshHandler mRedrawHandler = new RefreshHandler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        getWeatherString();
 
         if (Build.VERSION.SDK_INT < 16) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -63,6 +63,11 @@ public class FullscreenActivity extends AppCompatActivity {
         txtView.setText(formattedDate);
         txtView.setGravity(Gravity.CENTER);
         txtView.setTextSize(20);
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.SECOND, 10);
+
+        updateUI();
     }
 
     @Override
@@ -70,7 +75,15 @@ public class FullscreenActivity extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
     }
 
-    public void getWeatherString() {
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    public void getWeather() {
+
+    }
+
+    private void updateUI() {
         RequestQueue queue = Volley.newRequestQueue(this);
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, getUrl,
@@ -101,5 +114,19 @@ public class FullscreenActivity extends AppCompatActivity {
         });
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
+        mRedrawHandler.sleep(60 * 60 * 1000);
     }
+
+    class RefreshHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            FullscreenActivity.this.updateUI();
+        }
+
+        public void sleep(long delayMillis) {
+            this.removeMessages(0);
+            sendMessageDelayed(obtainMessage(0), delayMillis);
+        }
+    }
+
 }
