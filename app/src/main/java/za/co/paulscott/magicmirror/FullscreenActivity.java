@@ -50,7 +50,7 @@ public class FullscreenActivity extends AppCompatActivity {
     private String trelloKey = "718caa32afe66eca9ea319b14bb002cd";
     private String trelloBoardId = "57063bd1bfef9edab9b2ab90"; // Board ID of the Smart Mirror board
     private String trelloListId = "570641bc236e53e50efcbbff";
-    private String trelloCardsUrl = "https://api.trello.com/1//list/570641bc236e53e50efcbbff?fields=name&cards=open&card_fields=name";
+    private String trelloCardsUrl = "https://api.trello.com/1/list/570641bc236e53e50efcbbff?fields=name&cards=open&card_fields=name";
 
     private RefreshHandler mRedrawHandler = new RefreshHandler();
 
