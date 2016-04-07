@@ -15,6 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AnalogClock;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -24,13 +26,18 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class FullscreenActivity extends AppCompatActivity {
+
+    private ListView lv;
 
     private boolean mVisible;
     private String API_KEY = "e255e600633bd27746ed615a1bdae32f";
@@ -39,6 +46,12 @@ public class FullscreenActivity extends AppCompatActivity {
     private String lon = "28.017944";
     private String getUrl = "http://api.openweathermap.org/data/2.5/weather?lat="
             + lat + "&lon=" + lon + "&apikey=" + API_KEY + "&units=" + UNITS;
+    private String trelloToken = "707fbd754835ac372811ef6c6365ebe560808b99b284b46a17f46cb632919b06";
+    private String trelloKey = "718caa32afe66eca9ea319b14bb002cd";
+    private String trelloBoardId = "57063bd1bfef9edab9b2ab90"; // Board ID of the Smart Mirror board
+    private String trelloListId = "570641bc236e53e50efcbbff";
+    private String trelloCardsUrl = "https://api.trello.com/1//list/570641bc236e53e50efcbbff?fields=name&cards=open&card_fields=name";
+
     private RefreshHandler mRedrawHandler = new RefreshHandler();
 
     @Override
@@ -71,8 +84,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.SECOND, 10);
-
         updateUI();
+        getTrelloCards();
     }
 
     @Override
@@ -129,6 +142,54 @@ public class FullscreenActivity extends AppCompatActivity {
                         } catch (JSONException e) {
                             TextView w = (TextView) findViewById(R.id.weath);
                             w.setText(R.string.noweather);
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println(error.toString());
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+        mRedrawHandler.sleep(60 * 60 * 1000);
+    }
+
+    private void getTrelloCards() {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, trelloCardsUrl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // parse out the JSON
+                        try {
+                            JSONObject res = new JSONObject(response);
+                            JSONArray cards = res.getJSONArray("cards");
+                            List<String> cardsToDisplay = new ArrayList<String>();
+                            for (int i=0; i < cards.length(); i++) {
+                                JSONObject card = cards.getJSONObject(i);
+                                String cardName = card.getString("name");
+                                cardsToDisplay.add(cardName);
+                            }
+                            String ret = cardsToDisplay.toString();
+                            lv = (ListView) findViewById(R.id.listView);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                                    getApplicationContext(),
+                                    android.R.layout.simple_list_item_1,
+                                    cardsToDisplay );
+
+                            lv.setAdapter(arrayAdapter);
+                        } catch (JSONException e) {
+                            List<String> errorCards = new ArrayList<String>();
+                            lv = (ListView) findViewById(R.id.listView);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                                    getApplicationContext(),
+                                    android.R.layout.simple_list_item_1,
+                                    errorCards );
+
+                            lv.setAdapter(arrayAdapter);
                             e.printStackTrace();
                         }
                     }

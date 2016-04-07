@@ -45,5 +45,13 @@
         android:textSize="34dp"
         android:textStyle="bold" />
 
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/weath" />
+
 
 </RelativeLayout>
