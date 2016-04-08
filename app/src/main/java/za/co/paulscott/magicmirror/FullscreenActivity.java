@@ -50,9 +50,11 @@ public class FullscreenActivity extends AppCompatActivity {
     private String trelloKey = "718caa32afe66eca9ea319b14bb002cd";
     private String trelloBoardId = "57063bd1bfef9edab9b2ab90"; // Board ID of the Smart Mirror board
     private String trelloListId = "570641bc236e53e50efcbbff";
-    private String trelloCardsUrl = "https://api.trello.com/1/list/570641bc236e53e50efcbbff?fields=name&cards=open&card_fields=name";
+    private String trelloCardsUrl = "https://api.trello.com/1/list/570641bc236e53e50efcbbff?fields=name&cards=open&card_fields=name&key="
+            + trelloKey + "&token=" + trelloToken;
 
     private RefreshHandler mRedrawHandler = new RefreshHandler();
+    private TrelloRefreshHandler mTrelloRedrawHandler = new TrelloRefreshHandler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,13 +203,25 @@ public class FullscreenActivity extends AppCompatActivity {
         });
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
-        mRedrawHandler.sleep(60 * 60 * 1000);
+        mTrelloRedrawHandler.sleep(5 * 60 * 1000);
     }
 
     class RefreshHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             FullscreenActivity.this.updateUI();
+        }
+
+        public void sleep(long delayMillis) {
+            this.removeMessages(0);
+            sendMessageDelayed(obtainMessage(0), delayMillis);
+        }
+    }
+
+    class TrelloRefreshHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            FullscreenActivity.this.getTrelloCards();
         }
 
         public void sleep(long delayMillis) {
